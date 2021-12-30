@@ -1,0 +1,4 @@
+#!/bin/bash
+apt update
+echo "It is done" > /root/placeholder.file
+
