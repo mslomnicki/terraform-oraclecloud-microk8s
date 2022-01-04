@@ -1,4 +1,9 @@
 #!/bin/bash
 apt update
-echo "It is done" > /root/placeholder.file
+DEBIAN_FRONTEND=noninteractive apt upgrade -y
+DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends docker.io vim curl wget vim
+apt clean
+snap install microk8s --classic --channel=1.22/stable 2>&1
+microk8s enable dns:169.256.169.254 storage 2>&1
+usermod -aG docker,microk8s ubuntu
 

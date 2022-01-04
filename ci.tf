@@ -25,7 +25,7 @@ resource "oci_core_instance" "ci_k8s" {
 
   metadata = {
     ssh_authorized_keys = var.ssh_key
-    #    user_data           = base64encode(file("./userdata/bootstrap"))
+    user_data           = base64encode(file("./userdata/bootstrap"))
   }
 
   timeouts {
