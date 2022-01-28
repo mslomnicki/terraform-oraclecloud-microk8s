@@ -33,6 +33,11 @@ variable "ssh_key" {
   type = string
 }
 
+variable "ssh_private_key_filename" {
+  description = "Location of SSH private key"
+  type        = string
+}
+
 variable "vm_image_ocid" {
   type = map(string)
 
