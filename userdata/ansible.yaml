@@ -1,8 +1,19 @@
-- name: "Test"
+- name: "Configure microk8s"
   hosts: localhost
   become: yes
   tasks:
-    - name: "Test"
+    - name: "Add IP to microk8s csr tempalate"
+      lineinfile:
+        insertafter: "#MOREIPS"
+        line: "VM.99 = {{ public_ip }}"
+        state: present
+        path: /var/snap/microk8s/current/certs/csr.conf.template
+      notify: "Restart microk8s"
+    - name: "Debug"
       debug:
-        msg: "Hello world"
+        var: "public_ip"
+  handlers: 
+    - name: "Restart microk8s"
+      shell:
+        cmd: "microk8s stop && microk8s start"
 

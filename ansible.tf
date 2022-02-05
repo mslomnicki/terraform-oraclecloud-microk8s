@@ -52,6 +52,17 @@ resource "null_resource" "ansible_exec" {
     destination = "ansible/ansible.yaml"
   }
 
+  provisioner "file" {
+    connection {
+      type        = "ssh"
+      host        = oci_core_instance.ci_k8s[count.index].public_ip
+      user        = "ubuntu"
+      private_key = file(var.ssh_private_key_filename)
+    }
+    source      = "userdata/ansible_exec.sh"
+    destination = "ansible/ansible_exec.sh"
+  }
+
   provisioner "remote-exec" {
     connection {
       agent       = false
@@ -60,6 +71,9 @@ resource "null_resource" "ansible_exec" {
       user        = "ubuntu"
       private_key = file(var.ssh_private_key_filename)
     }
-    script = "userdata/ansible_exec.sh"
+    inline = [
+     "/bin/bash ~/ansible/ansible_exec.sh ${oci_core_instance.ci_k8s[count.index].public_ip}"
+    ]
   }
 }
+

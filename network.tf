@@ -6,10 +6,6 @@ resource "oci_core_vcn" "vcn_kube" {
   is_ipv6enabled = false
 }
 
-output "vcn_id" {
-  value = oci_core_vcn.vcn_kube.id
-}
-
 resource "oci_core_subnet" "subnet_kube" {
   cidr_block     = var.subnet_cidr
   compartment_id = var.compartment_ocid
