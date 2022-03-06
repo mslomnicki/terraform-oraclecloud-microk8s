@@ -1,19 +1,63 @@
 - name: "Configure microk8s"
   hosts: localhost
   become: yes
+  gather_facts: no
   tasks:
-    - name: "Add IP to microk8s csr tempalate"
-      lineinfile:
-        insertafter: "#MOREIPS"
-        line: "VM.99 = {{ public_ip }}"
-        state: present
+    - name: "Update microk8s snap"
+      command:
+        cmd: 'snap refresh microk8s --classic --channel=1.23/stable'
+    - name: "Add IP to microk8s csr template"
+      blockinfile:
         path: /var/snap/microk8s/current/certs/csr.conf.template
-      notify: "Restart microk8s"
-    - name: "Debug"
-      debug:
-        var: "public_ip"
+        insertafter: "^#MOREIPS"
+        block: |
+          IP.98 = {{ private_ip }}
+          IP.99 = {{ public_ip }}
+
+      notify: "Refresh microk8s certs"
+    - name: "Edit firewall rules"
+      lineinfile:
+        insertafter: '{{ item.after }}'
+        line: '{{ item.line }}'
+        state: present
+        path: /etc/iptables/rules.v4
+      loop:
+        - after: '^:InstanceServices'
+          line: ':LocalRules - [0:0]'
+        - after: '-A INPUT -j REJECT --reject-with icmp-host-prohibited'
+          line: '-A LocalRules -s {{ subnet_cidr }} -j ACCEPT'
+        - after: '-A INPUT -j REJECT --reject-with icmp-host-prohibited'
+          line: '-A LocalRules -s {{ mgmt_address }} -j ACCEPT'
+      notify: 'Restart netfilter'
+    - name: "Edit firewall rules (after rules)"
+      lineinfile:
+        insertbefore: '{{ item.before }}'
+        line: '{{ item.line }}'
+        state: present
+        path: /etc/iptables/rules.v4
+      loop:
+        - before: '-A INPUT -j REJECT --reject-with icmp-host-prohibited'
+          line: '-A INPUT -j LocalRules'
+      notify: 'Restart netfilter'
+    - name: "Edit firewall rules (remove lines)"
+      lineinfile:
+        line: '{{ item }}'
+        state: absent
+        path: /etc/iptables/rules.v4
+      loop:
+        - '-A FORWARD -j REJECT --reject-with icmp-host-prohibited'
+      notify: 'Restart netfilter'
   handlers: 
-    - name: "Restart microk8s"
-      shell:
-        cmd: "microk8s stop && microk8s start"
+    - name: "Restart netfilter"
+      systemd:
+        service: netfilter-persistent.service
+        state: restarted
+#      notify: "Restart microk8s"
+    - name: "Refresh microk8s certs"
+      command:
+        cmd: "echo xxx"
+#        cmd: "microk8s refresh-certs"
+#    - name: "Restart microk8s"
+#      command:
+#        cmd: "microk8s stop && microk8s start"
 

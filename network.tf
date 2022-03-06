@@ -80,6 +80,13 @@ resource "oci_core_default_security_list" "seclist_kube" {
     stateless   = "false"
   }
   ingress_security_rules {
+    description = "[MGMT] Allow all traffic from local subnet"
+    protocol    = "all"
+    source      = var.subnet_cidr
+    source_type = "CIDR_BLOCK"
+    stateless   = "true"
+  }
+  ingress_security_rules {
     description = "[MGMT] Allow all traffic"
     protocol    = "all"
     source      = var.mgmt_address

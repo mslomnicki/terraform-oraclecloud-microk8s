@@ -25,8 +25,7 @@ resource "null_resource" "ansible_exec" {
     oci_core_instance.ci_k8s,
     null_resource.ansible_setup
   ]
-  #  count = var.vm_count
-  count = 1
+  count = var.vm_count
 
   provisioner "remote-exec" {
     connection {
@@ -72,7 +71,7 @@ resource "null_resource" "ansible_exec" {
       private_key = file(var.ssh_private_key_filename)
     }
     inline = [
-     "/bin/bash ~/ansible/ansible_exec.sh ${oci_core_instance.ci_k8s[count.index].public_ip}"
+     "/bin/bash ~/ansible/ansible_exec.sh ${oci_core_instance.ci_k8s[count.index].private_ip} ${oci_core_instance.ci_k8s[count.index].public_ip} ${var.subnet_cidr} ${var.mgmt_address}"
     ]
   }
 }
