@@ -11,6 +11,7 @@
         path: /var/snap/microk8s/current/certs/csr.conf.template
         insertafter: "^#MOREIPS"
         block: |
+          IP.97 = {{ nlb_public_ip }}
           IP.98 = {{ private_ip }}
           IP.99 = {{ public_ip }}
 
@@ -55,8 +56,7 @@
 #      notify: "Restart microk8s"
     - name: "Refresh microk8s certs"
       command:
-        cmd: "echo xxx"
-#        cmd: "microk8s refresh-certs"
+        cmd: "microk8s refresh-certs"
 #    - name: "Restart microk8s"
 #      command:
 #        cmd: "microk8s stop && microk8s start"

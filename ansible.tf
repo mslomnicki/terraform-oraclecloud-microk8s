@@ -1,6 +1,7 @@
 resource "null_resource" "ansible_setup" {
   depends_on = [
     oci_core_instance.ci_k8s,
+    oci_network_load_balancer_network_load_balancer.nlb_kube
   ]
   count = var.vm_count
 
@@ -71,7 +72,7 @@ resource "null_resource" "ansible_exec" {
       private_key = file(var.ssh_private_key_filename)
     }
     inline = [
-     "/bin/bash ~/ansible/ansible_exec.sh ${oci_core_instance.ci_k8s[count.index].private_ip} ${oci_core_instance.ci_k8s[count.index].public_ip} ${var.subnet_cidr} ${var.mgmt_address}"
+      "/bin/bash ~/ansible/ansible_exec.sh ${oci_core_instance.ci_k8s[count.index].private_ip} ${oci_core_instance.ci_k8s[count.index].public_ip} ${var.subnet_cidr} ${var.mgmt_address} ${local.nlb_public_ip}"
     ]
   }
 }
